@@ -1,16 +1,36 @@
 import pandas as pd
+import os
+
+# Get the current working directory
+current_directory = os.getcwd()
+
+# Get the parent directory
+parent_directory = os.path.dirname(current_directory)
+
+# Construct the path to the 'data.csv' file in the 'raw_data' subdirectory
+data_file_path = os.path.join(parent_directory, 'raw_data', 'data.csv')
+
+# Now you can use data_file_path to open and read the file
+try:
+    with open(data_file_path, 'r') as file:
+        data = file.read()
+        # Process the data
+        print(data)
+except FileNotFoundError:
+    print(f"File not found: {data_file_path}")
 
 
+########################################################
 # Loading the files into Pandas DataFrames
 
-dataframes = [pd.read_csv(file) for file in file_paths]
+dataframes = [pd.read_csv(file) for file in "/raw]
 
 # Merging the dataframes
 # Assuming that the dataframes have a similar structure and can be concatenated one after the other
 
 merged_df = pd.concat(dataframes, ignore_index=True)
 
-
+#####################################################
 # Data curation involves several steps:
 # 1. Removing rows with non-numerical data (like headers or units included in the data)
 # 2. Ensuring data types are correct for each column
@@ -34,3 +54,12 @@ missing_values = curated_df.isnull().sum()
 # Displaying a summary of missing values and the first few rows of the curated dataframe
 missing_values_summary = missing_values.to_dict(), curated_df.head()
 missing_values_summary
+
+
+########################################################
+# Filling the NaN values in the "Nuclear" column with 0
+merged_df['Nuclear'].fillna(0, inplace=True)
+
+# Verifying if there are any NaN values left in the "Nuclear" column
+remaining_nan_in_nuclear = merged_df['Nuclear'].isna().sum()
+remaining_nan_in_nuclear
