@@ -7,59 +7,80 @@ current_directory = os.getcwd()
 # Get the parent directory
 parent_directory = os.path.dirname(current_directory)
 
-# Construct the path to the 'data.csv' file in the 'raw_data' subdirectory
-data_file_path = os.path.join(parent_directory, 'raw_data', 'data.csv')
+# Construct the paths to the CSV files in the 'raw_data' subdirectory
+paths = {
+    'elect': os.path.join(parent_directory, 'rawdata', 'Total_net_electricity_generation_in_Germany.csv'),
+    'coal': os.path.join(parent_directory, 'rawdata', 'coal_price.csv'),
+    'oil': os.path.join(parent_directory, 'rawdata', 'oil_price.csv'),
+    'gas': os.path.join(parent_directory, 'rawdata', 'ttf_price.csv'),
+    'weather_north_hourly': os.path.join(parent_directory, 'rawdata', 'weather_north.csv'),
+    'weather_north_daily': os.path.join(parent_directory, 'rawdata', 'weather_north_daily.csv'),
+    'weather_south_hourly': os.path.join(parent_directory, 'rawdata', 'weather_south.csv'),
+    'weather_south_daily': os.path.join(parent_directory, 'rawdata', 'weather_south_daily.csv')
+}
 
-# Now you can use data_file_path to open and read the file
-try:
-    with open(data_file_path, 'r') as file:
-        data = file.read()
-        # Process the data
-        print(data)
-except FileNotFoundError:
-    print(f"File not found: {data_file_path}")
+def get_data()
+    # Initialize a dictionary to hold the dataframes
+    dataframes = {}
 
-
-########################################################
-# Loading the files into Pandas DataFrames
-
-dataframes = [pd.read_csv(file) for file in "/raw]
-
-# Merging the dataframes
-# Assuming that the dataframes have a similar structure and can be concatenated one after the other
-
-merged_df = pd.concat(dataframes, ignore_index=True)
-
-#####################################################
-# Data curation involves several steps:
-# 1. Removing rows with non-numerical data (like headers or units included in the data)
-# 2. Ensuring data types are correct for each column
-# 3. Handling missing or null values
-
-# Step 1: Removing rows with non-numerical data
-# We assume that rows with NaN in 'Date (GMT+1)' are non-numerical rows
-curated_df = merged_df[merged_df['Date (GMT+1)'].notna()]
-
-# Step 2: Ensuring data types are correct
-# Converting 'Date (GMT+1)' to datetime and other columns to numeric types
-curated_df['Date (GMT+1)'] = pd.to_datetime(curated_df['Date (GMT+1)'])
-for col in curated_df.columns:
-    if col != 'Date (GMT+1)':
-        curated_df[col] = pd.to_numeric(curated_df[col], errors='coerce')
-
-# Step 3: Handling missing or null values
-# Checking for missing values
-missing_values = curated_df.isnull().sum()
-
-# Displaying a summary of missing values and the first few rows of the curated dataframe
-missing_values_summary = missing_values.to_dict(), curated_df.head()
-missing_values_summary
+    # Load each file into a separate dataframe
+    for key, path in paths.items():
+        try:
+            dataframes[key] = pd.read_csv(path, sep=';', index_col=False)
+            print(f"Loaded {key} successfully.")
+        except FileNotFoundError:
+            print(f"File not found: {path}")
+    return dataframes
 
 
-########################################################
-# Filling the NaN values in the "Nuclear" column with 0
-merged_df['Nuclear'].fillna(0, inplace=True)
+def clean_data(dataframes):
 
-# Verifying if there are any NaN values left in the "Nuclear" column
-remaining_nan_in_nuclear = merged_df['Nuclear'].isna().sum()
-remaining_nan_in_nuclear
+    cleaned_data = pd.DataFrame()
+
+    # clean coal data
+    # Access the coal price data
+    coal_price_data = dataframes['coal']
+
+    # Converting the 'Date' column to datetime format
+    coal_price_data['Date'] = pd.to_datetime(coal_price_data['Date'], errors='coerce')
+
+    # Deleting columns "Open", "High", "Low", "Close", and "Volume"
+    coal_price_data.drop(['Open', 'High', 'Low', 'Close*', 'Volume'], axis=1, inplace=True)
+
+    # Renaming the column "Adj Close**" to "coal_adj_close"
+    coal_price_data.rename(columns={'Adj Close**': 'coal_adj_close'}, inplace=True)
+
+    # Final cleaned data
+    coal_price_data_cleaned = coal_price_data
+
+    # clean LNG (TTF) data
+    # Access the gas price data
+    ttf_price_data = dataframes['gas']
+
+    # Converting the 'Date' column to datetime format
+    ttf_price_data['Date'] = pd.to_datetime(ttf_price_data['Date'], errors='coerce')
+
+    # Deleting columns "Open", "High", "Low", "Close"
+    ttf_price_data.drop(['Open', 'High', 'Low', 'Close*'], axis=1, inplace=True)
+
+    # Renaming the columns "Adj Close**" to "ttf_adj_close" and "Volume" to "ttf_volume"
+    ttf_price_data.rename(columns={'Adj Close**': 'ttf_adj_close', 'Volume': 'ttf_volume'}, inplace=True)
+
+    # Final cleaned data
+    ttf_price_data_cleaned = ttf_price_data
+
+    # clean oil data
+    # Access the oil price data
+    coal_price_data = dataframes['oil']
+
+    # Converting the 'Date' column to datetime format
+    oil_price_data['Date'] = pd.to_datetime(oil_price_data['Date'], errors='coerce')
+
+    # Deleting columns "Open", "High", "Low", "Close", and "Volume"
+    oil_price_data.drop(['Open', 'High', 'Low', 'Close*'], axis=1, inplace=True)
+
+    # Renaming the columns "Adj Close**" to "oil_adj_close" and "Volume" to "oil_volume"
+    oil_price_data.rename(columns={'Adj Close**': 'oil_adj_close', 'Volume': 'oil_volume'}, inplace=True)
+
+    # Final cleaned data
+    oil_price_data_cleaned = oil_price_data
