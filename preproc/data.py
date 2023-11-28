@@ -19,7 +19,7 @@ paths = {
     'weather_south_daily': os.path.join(parent_directory, 'rawdata', 'weather_south_daily.csv')
 }
 
-def get_data()
+def get_data():
     # Initialize a dictionary to hold the dataframes
     dataframes = {}
 
@@ -84,3 +84,5 @@ def clean_data(dataframes):
 
     # Final cleaned data
     oil_price_data_cleaned = oil_price_data
+
+    return None
