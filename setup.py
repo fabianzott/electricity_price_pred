@@ -5,7 +5,7 @@ with open("requirements.txt") as f:
     content = f.readlines()
 requirements = [x.strip() for x in content if "git+" not in x]
 
-setup(name='elec_price_pred',
+setup(name='electricity_price_pred',
       version="0.0.12",
       description="Electricity Price Prediction",
       license="MIT",
