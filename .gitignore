@@ -1,2 +1,4 @@
 test/
 notebooks/
+.env
+elec_price_pred.egg-info/
