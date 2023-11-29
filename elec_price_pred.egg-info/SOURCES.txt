@@ -1,8 +1,0 @@
-README.md
-setup.py
-elec_price_pred.egg-info/PKG-INFO
-elec_price_pred.egg-info/SOURCES.txt
-elec_price_pred.egg-info/dependency_links.txt
-elec_price_pred.egg-info/not-zip-safe
-elec_price_pred.egg-info/requires.txt
-elec_price_pred.egg-info/top_level.txt
