@@ -59,7 +59,10 @@ bucket_dict = {
     'weather_north_daily': 'weather_north_daily.csv',
     'weather_south_hourly': 'weather_south_hourly.csv',
     'weather_south_daily': 'weather_south_daily.csv',
-    'pmi_index': 'PMI_germany.csv'
+    'pmi_index': 'PMI_germany.csv',
+    'weather_brocken_daily': 'weather_brocken_daily.csv',
+    'weather_brocken_hourly': 'weather_brocken_hourly.csv',
+    'holidays': 'holidays.csv'
 }
 
 
@@ -95,15 +98,10 @@ def get_data_cloud(name):
                 # Read the CSV data into a DataFrame
                 dataframe = pd.read_csv(string_data, sep=',', index_col=False, low_memory=False)
 
-                # Print the entire DataFrame
-                #print(df)
-
             except Exception as e:
                 print(f"An error occurred: {e}")
 
-
             print(f"Loaded {bucket_dict[name]} successfully.")
-
 
         else:
             # Define your bucket name and object name (file name)
@@ -124,9 +122,6 @@ def get_data_cloud(name):
                 # Read the CSV data into a DataFrame
                 dataframe = pd.read_csv(string_data, sep=';', index_col=False)
 
-                # Print the entire DataFrame
-                #print(df)
-
             except Exception as e:
                 print(f"An error occurred: {e}")
 
@@ -136,10 +131,6 @@ def get_data_cloud(name):
         print(f"File not found: {path}")
 
     return dataframe
-
-#data = get_data_cloud()
-#for key, value in data.items() :
-#    print (key)
 
 
 def clean_data_coal():
@@ -199,54 +190,103 @@ def clean_data_oil():
     # Final cleaned data
     oil_price_data_cleaned = oil_price_data
 
-    return oil_price_data
+    return oil_price_data_cleaned
 
 def clean_data_electricity():
 
     # clean electricity data
     # Access the electricity data
-    elec_data = get_data_cloud("elec")
+    elec_data = get_data_cloud("elect")
 
-    # Step 1: Deleting the first row and creating a copy of the DataFrame
-    elec_data = elec_data.iloc[1:].copy()
+    # Deleting row 0 and resetting the index
+    elec_data = elec_data.drop(elec_data.index[0]).reset_index(drop=True)
 
-    # Step 2: Converting "Date__GMT__" to datetime and sorting
-    elec_data['Date__GMT__'] = pd.to_datetime(elec_data['Date__GMT__'])
-    elec_data = elec_data.sort_values(by='Date__GMT__')
+    # Specifying the timezone handling during the datetime conversion
+    elec_data['Date (GMT+1)'] = pd.to_datetime(elec_data['Date (GMT+1)'], utc=True)
 
-    # Step 3: Filling NaN values in "Nuclear" column with 0
-    elec_data['Nuclear'] = elec_data['Nuclear'].fillna(0)
+    # Fill NaN values in the "Nuclear" column with 0
+    elec_data['Nuclear'] = pd.to_numeric(elec_data['Nuclear'], errors='coerce').fillna(0)
 
-    # Step 4: Merging "Day_Ahead_Auction__DE_AT_LU_" and "Day_Ahead_Auction__DE_LU_"
-    elec_data['Day_Ahead_Auction__DE_AT_LU_'] = elec_data['Day_Ahead_Auction__DE_AT_LU_'].fillna(elec_data['Day_Ahead_Auction__DE_LU_'])
+    # Merging "Day Ahead Auction (DE-LU)" and "Day Ahead Auction (DE-AT-LU)" columns on NaN values
+    # The idea is to fill NaN values in one column with values from the other column
+    elec_data['Day Ahead Auction'] = elec_data['Day Ahead Auction (DE-LU)'].fillna(elec_data['Day Ahead Auction (DE-AT-LU)'])
 
-    # Dropping the now redundant "Day_Ahead_Auction__DE_LU_" column
-    elec_data = elec_data.drop(columns=['Day_Ahead_Auction__DE_LU_'])
+    # Deleting rows with NaN values in the "Day Ahead Auction" column
+    elec_data = elec_data.dropna(subset=['Day Ahead Auction'])
+
+    # Deleting the "Day Ahead Auction (DE-LU)" and "Day Ahead Auction (DE-AT-LU)" columns
+    elec_data = elec_data.drop(columns=['Day Ahead Auction (DE-LU)', 'Day Ahead Auction (DE-AT-LU)'])
+
+    # Fill NaN values in "Hydro pumped storage consumption" with 0
+    elec_data['Hydro pumped storage consumption'] = elec_data['Hydro pumped storage consumption'].fillna(0)
+
+    # Delete rows with NaN values in "Fossil brown coal / lignite"
+    elec_data = elec_data.dropna(subset=['Fossil brown coal / lignite'])
+
+    # Fill NaN values in "Fossil coal-derived gas" with 0
+    elec_data['Fossil coal-derived gas'] = elec_data['Fossil coal-derived gas'].fillna(0)
+
+    # Fill NaN values in "Hydro pumped storage" with 0
+    elec_data['Hydro pumped storage'] = elec_data['Hydro pumped storage'].fillna(0)
+
+    # Delete rows with missing values for "Load", "Residual load", and "Renewable share of load"
+    elec_data = elec_data.dropna(subset=['Load', 'Residual load', 'Renewable share of load'])
+
+    # Renaming columns as specified
+    column_rename_map = {
+        "Date (GMT+1)": "date_gmt+1",
+        "Hydro pumped storage consumption": "hydro_storage_in",
+        "Cross border electricity trading": "cross_border",
+        "Nuclear": "nuclear",
+        "Hydro Run-of-River": "hydro",
+        "Biomass": "biomass",
+        "Fossil brown coal / lignite": "lignite",
+        "Fossil hard coal": "hard_coal",
+        "Fossil oil": "oil",
+        "Fossil coal-derived gas": "coal_gas",
+        "Fossil gas": "nat_gas",
+        "Geothermal": "geothermal",
+        "Hydro water reservoir": "hydro_reservoir",
+        "Hydro pumped storage": "hydro_storage_out",
+        "Others": "others",
+        "Waste": "waste",
+        "Wind offshore": "wind_offshore",
+        "Wind onshore": "wind_onshore",
+        "Solar": "solar",
+        "Load": "load",
+        "Residual load": "residual_load",
+        "Renewable share of generation": "renewable_share_gen",
+        "Renewable share of load": "renewable_share_load",
+        "Day Ahead Auction": "day_ahead_price"
+    }
+
+    elec_data = elec_data.rename(columns=column_rename_map)
+
+    # Deleting the "Year" column
+    #elec_data = elec_data.drop(columns=["Year"])
+
+    # Final cleaned data
+    elec_data_cleaned = elec_data
+
+    return elec_data_cleaned
 
 
-    # Step 1: Deleting the "Fossil_coal_derived_gas" column
-    elec_data.drop(columns=['Fossil_coal_derived_gas'], inplace=True)
-
-    # Step 2: Renaming "Fossil_brown_coal___lignite" to "lignite" and filling missing values with 0
-    elec_data.rename(columns={'Fossil_brown_coal___lignite': 'lignite'}, inplace=True)
-    elec_data['lignite'] = elec_data['lignite'].fillna(0)
-
-    # Step 3: Renaming and filling missing values for hydro storage columns
-    elec_data.rename(columns={'Hydro_pumped_storage_consumption': 'hydro_storage_out',
-                   'Hydro_pumped_storage': 'hydro_storage_in'}, inplace=True)
-    elec_data['hydro_storage_out'] = elec_data['hydro_storage_out'].fillna(0)
-    elec_data['hydro_storage_in'] = elec_data['hydro_storage_in'].fillna(0)
-
-    # Step 4: Renaming "Date__GMT__" to "datetime" and deleting rows with missing values
-    elec_data.rename(columns={'Date__GMT__': 'datetime'}, inplace=True)
-    elec_data = elec_data.dropna(subset=['datetime'])
-
-    # Step 5: Deleting rows where values are missing in specific columns
-    columns_to_check = ['Renewable_share_of_load', 'Renewable_share_of_generation', 'Residual_load', 'Load', 'Solar']
-    elec_data = elec_data.dropna(subset=columns_to_check)
+def clean_data_pmi_index():
+    # clean electricity data
+    # Access the electricity data
+    pmi_data = get_data_cloud("pmi_index")
 
     return None
 
-print(clean_data_coal())
-print(clean_data_gas())
-print(clean_data_oil())
+
+def clean_data_weather():
+    # clean weather data
+    # Access the electricity data
+
+
+    return None
+
+
+
+print(clean_data_electricity())
+print(clean_data_electricity().info())
