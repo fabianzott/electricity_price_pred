@@ -2,3 +2,5 @@ test/
 notebooks/
 .env
 elec_price_pred.egg-info/
+electricity_price_pred.egg-info/
+preproc/feature_engin.ipynb
