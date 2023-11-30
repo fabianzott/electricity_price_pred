@@ -336,6 +336,3 @@ def clean_data_weather():
 
 
     return None
-
-
-print(clean_data_electricity().info())
