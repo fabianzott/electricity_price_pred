@@ -1,5 +1,5 @@
 test/
 notebooks/
 .env
-elec_price_pred.egg-info/
-.DS_Store/
+elec_price_pred.egg-in
+.DS_Store
