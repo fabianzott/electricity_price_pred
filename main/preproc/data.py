@@ -76,6 +76,7 @@ def get_data_cloud(name):
 
     # Initialize a client
     client = storage.Client()
+    dataframe = None
 
     try:
         if "germany_electricity_generation_2018-2023.csv" in bucket_dict[name]:
@@ -97,11 +98,11 @@ def get_data_cloud(name):
 
                 # Read the CSV data into a DataFrame
                 dataframe = pd.read_csv(string_data, sep=',', index_col=False, low_memory=False)
+                print(f"Loaded {bucket_dict[name]} successfully.")
 
             except Exception as e:
                 print(f"An error occurred: {e}")
-
-            print(f"Loaded {bucket_dict[name]} successfully.")
+                return None
 
         else:
             # Define your bucket name and object name (file name)
@@ -121,14 +122,15 @@ def get_data_cloud(name):
 
                 # Read the CSV data into a DataFrame
                 dataframe = pd.read_csv(string_data, sep=';', index_col=False)
+                print(f"Loaded {bucket_dict[name]} successfully.")
 
             except Exception as e:
                 print(f"An error occurred: {e}")
-
-            print(f"Loaded {bucket_dict[name]} successfully.")
+                return None
 
     except FileNotFoundError:
         print(f"File not found: {path}")
+        return None
 
     return dataframe
 
@@ -139,8 +141,14 @@ def clean_data_coal():
     # Access the coal price data
     coal_price_data = get_data_cloud("coal")
 
-    # Converting the 'Date' column to datetime format
+    # Check if the DataFrame is empty or None
+    if coal_price_data is None or coal_price_data.empty:
+        print("No coal data available.")
+        return None  # Return None or an empty DataFrame
+
+    # Converting the 'Date' column to datetime format and 'coal_adj_close' to a float
     coal_price_data['Date'] = pd.to_datetime(coal_price_data['Date'], errors='coerce')
+    coal_price_data['Adj Close**'] = pd.to_numeric(coal_price_data['Adj Close**'], errors='coerce')
 
     # Deleting columns "Open", "High", "Low", "Close", and "Volume"
     coal_price_data.drop(['Open', 'High', 'Low', 'Close*', 'Volume'], axis=1, inplace=True)
@@ -158,8 +166,15 @@ def clean_data_gas():
     # Access the gas price data
     ttf_price_data = get_data_cloud("gas")
 
-    # Converting the 'Date' column to datetime format
+    # Check if the DataFrame is empty or None
+    if ttf_price_data is None or ttf_price_data.empty:
+        print("No ttf data available.")
+        return None  # Return None or an empty DataFrame
+
+    # Converting the 'Date' column to datetime format and the 'ttf_adj_close', 'ttf_volume' to float format
     ttf_price_data['Date'] = pd.to_datetime(ttf_price_data['Date'], errors='coerce')
+    ttf_price_data['Adj Close**'] = pd.to_numeric(ttf_price_data['Adj Close**'], errors='coerce')
+    ttf_price_data['Volume'] = pd.to_numeric(ttf_price_data['Volume'].str.replace(',', ''), errors='coerce')
 
     # Deleting columns "Open", "High", "Low", "Close"
     ttf_price_data.drop(['Open', 'High', 'Low', 'Close*'], axis=1, inplace=True)
@@ -178,8 +193,15 @@ def clean_data_oil():
     # Access the oil price data
     oil_price_data = get_data_cloud("oil")
 
-    # Converting the 'Date' column to datetime format
+    # Check if the DataFrame is empty or None
+    if oil_price_data is None or oil_price_data.empty:
+        print("No oil data available.")
+        return None  # Return None or an empty DataFrame
+
+    # Converting the 'Date' column to datetime format and the 'oil_adj_close', 'oil_volume' to float format
     oil_price_data['Date'] = pd.to_datetime(oil_price_data['Date'], errors='coerce')
+    oil_price_data['Adj Close**'] = pd.to_numeric(oil_price_data['Adj Close**'], errors='coerce')
+    oil_price_data['Volume'] = pd.to_numeric(oil_price_data['Volume'].str.replace(',', ''), errors='coerce')
 
     # Deleting columns "Open", "High", "Low", "Close", and "Volume"
     oil_price_data.drop(['Open', 'High', 'Low', 'Close*'], axis=1, inplace=True)
