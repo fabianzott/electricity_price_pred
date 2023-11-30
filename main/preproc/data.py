@@ -127,7 +127,29 @@ def get_data_cloud(name):
             except Exception as e:
                 print(f"An error occurred: {e}")
 
+        elif 'holidays.csv' in bucket_dict[name]:
 
+            # Define your bucket name and object name (file name)
+            bucket_name = os.environ.get("BUCKET_NAME")
+            blob_name = bucket_dict[name]
+
+            # Create a bucket object and read the file
+            bucket = client.bucket(bucket_name)
+            blob = bucket.blob(blob_name)
+
+            try:
+                # Download the blob as bytes
+                blob_data = blob.download_as_bytes()
+
+                # Convert to a file-like object
+                string_data = StringIO(blob_data.decode('utf-8'))
+
+                # Read the CSV data into a DataFrame
+                dataframe = pd.read_csv(string_data)
+                print(f"Loaded {bucket_dict[name]} successfully.")
+
+            except Exception as e:
+                print(f"An error occurred: {e}")
 
         else:
             # Define your bucket name and object name (file name)
@@ -329,6 +351,17 @@ def clean_data_pmi_index():
 
     return pmi_data_cleaned
 
+def clean_data_holidays():
+    # clean holidays data
+    # Access the holidays data
+    holidays_data = get_data_cloud("holidays")
+    # holidays_data['date'] = pd.to_datetime(holidays_data['date'], format='%B %d, %Y', utc=True)
+    holidays_data['date'] = pd.to_datetime(holidays_data['date'], format='%Y-%m-%d %H:%M:%S %Z')
+    # Final cleaned data
+    holidays_data_cleaned = holidays_data
+
+    return holidays_data_cleaned
+print(clean_data_holidays())
 
 def clean_data_weather():
     # clean weather data for all csv files (north, south germany, brocken)

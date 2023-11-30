@@ -110,3 +110,6 @@ def combine_dataframes():
     combined_df = combined_df.dropna()
 
     return combined_df
+
+combine = combine_dataframes()
+print(combine)
