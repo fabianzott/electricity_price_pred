@@ -55,11 +55,8 @@ bucket_dict = {
     'oil': 'oil_price.csv',
     'gas': 'ttf_price.csv',
     'weather_north_hourly': 'weather_north_hourly.csv',
-    'weather_north_daily': 'weather_north_daily.csv',
     'weather_south_hourly': 'weather_south_hourly.csv',
-    'weather_south_daily': 'weather_south_daily.csv',
     'pmi_index': 'PMI_germany.csv',
-    'weather_brocken_daily': 'weather_brocken_daily.csv',
     'weather_brocken_hourly': 'weather_brocken_hourly.csv',
     'holidays': 'holidays.csv'
 }
@@ -78,7 +75,7 @@ def get_data_cloud(name):
     dataframe = None
 
     try:
-        if "germany_electricity_generation_2018-2023.csv" in bucket_dict[name]:
+        if "germany_electricity_generation_2018-2023.csv" or "weather" in bucket_dict[name]:
 
             # Define your bucket name and object name (file name)
             bucket_name = os.environ.get("BUCKET_NAME")
@@ -364,8 +361,47 @@ def clean_data_holidays():
 print(clean_data_holidays())
 
 def clean_data_weather():
-    # clean weather data for all csv files (north, south germany, brocken)
-    # Access the weather data
+    # Clean weather data for all csv files (north, south germany, brocken)
+    weather_dfs = []
+    for key in bucket_dict:
+        if 'weather' in key and 'brocken' in key:
+            data = get_data_cloud(key)  # Pass the key to the function
+            data = data.rename(columns={'datetime_brocken': 'datetime'})
+            data.columns = [col + '_brocken' if col != 'datetime' else col for col in data.columns]
+            weather_dfs.append(data)
+        elif 'weather' in key and 'north' in key:
+            data = get_data_cloud(key)  # Pass the key to the function
+            data = data.rename(columns={'datetime_north': 'datetime'})
+            data.columns = [col + '_north' if col != 'datetime' else col for col in data.columns]
+            weather_dfs.append(data)
+        elif 'weather' in key and 'south' in key:
+            data = get_data_cloud(key)  # Pass the key to the function
+            data = data.rename(columns={'datetime_south': 'datetime'})
+            data.columns = [col + '_south' if col != 'datetime' else col for col in data.columns]
+            weather_dfs.append(data)
+
+    # Columns to keep in the dataframes
+    columns_to_keep = ["datetime", "temp", "windspeed", "solarradiation", "solarenergy"]
+
+    # Filtering each dataframe to keep only the specified columns
+    filtered_dataframes = []
+    for df in weather_dfs:
+        filtered_columns = [col for col in df.columns if any(substring in col.lower() for substring in columns_to_keep)]
+        filtered_df = df[filtered_columns]
+        filtered_dataframes.append(filtered_df)
+
+    # Merging the dataframes on the 'datetime' column
+    merged_df = filtered_dataframes[0]
+    for df in filtered_dataframes[1:]:
+        merged_df = merged_df.merge(df, on="datetime", how="outer")
 
 
-    return None
+    # !!!! fast fix -> deleting columns with 2.5% of missing values -
+    merged_df = merged_df.drop(columns=["solarradiation_north", "solarenergy_north"])
+
+    # !!!! fast fix -> filling NaN values with 0 (not many 270 over all columns)
+    merged_df.fillna(0, inplace=True)
+
+
+    weather_data_cleaned = merged_df
+    return weather_data_cleaned
