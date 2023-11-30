@@ -5,8 +5,7 @@ from google.cloud import storage
 import pandas as pd
 from io import StringIO
 
-
-
+''' LEGACY
 # Get the current working directory
 current_directory = os.getcwd()
 
@@ -47,7 +46,7 @@ def get_data_local():
             print(f"File not found: {path}")
 
         return dataframes
-
+'''
 
 # filenames in the Google cloud data bucket
 bucket_dict = {
@@ -103,6 +102,31 @@ def get_data_cloud(name):
             except Exception as e:
                 print(f"An error occurred: {e}")
                 return None
+        if 'PMI_germany.csv' in bucket_dict[name]:
+
+            # Define your bucket name and object name (file name)
+            bucket_name = os.environ.get("BUCKET_NAME")
+            blob_name = bucket_dict[name]
+
+            # Create a bucket object and read the file
+            bucket = client.bucket(bucket_name)
+            blob = bucket.blob(blob_name)
+
+            try:
+                # Download the blob as bytes
+                blob_data = blob.download_as_bytes()
+
+                # Convert to a file-like object
+                string_data = StringIO(blob_data.decode('utf-8'))
+
+                # Read the CSV data into a DataFrame
+                dataframe = pd.read_csv(string_data)
+                print(f"Loaded {bucket_dict[name]} successfully.")
+
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+
 
         else:
             # Define your bucket name and object name (file name)
@@ -294,19 +318,28 @@ def clean_data_electricity():
 
 
 def clean_data_pmi_index():
-    # clean electricity data
-    # Access the electricity data
+    # clean pmi manager index data
+    # Access the pmi manager index data
     pmi_data = get_data_cloud("pmi_index")
+    pmi_data = pmi_data.rename(columns={'Release Date': 'date', 'Actual': 'actual_pmi'}).drop(['Forecast', 'Previous'], axis=1)
+    pmi_data['date'] = pd.to_datetime(pmi_data['date'], format='%B %d, %Y', utc=True)
+    # Final cleaned data
+    pmi_data_cleaned = pmi_data
 
-    return None
+    return pmi_data_cleaned
 
 
 def clean_data_weather():
-    # clean weather data
-    # Access the electricity data
+    # clean weather data for all csv files (north, south germany, brocken)
+    # Access the weather data
 
 
     return None
+
+
+
+print(clean_data_electricity())
+print(clean_data_electricity().info())
 
 
 
