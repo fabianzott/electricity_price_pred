@@ -102,7 +102,8 @@ def get_data_cloud(name):
             except Exception as e:
                 print(f"An error occurred: {e}")
                 return None
-        if 'PMI_germany.csv' in bucket_dict[name]:
+
+        elif 'PMI_germany.csv' in bucket_dict[name]:
 
             # Define your bucket name and object name (file name)
             bucket_name = os.environ.get("BUCKET_NAME")
@@ -243,7 +244,7 @@ def clean_data_electricity():
     # clean electricity data
     # Access the electricity data
     elec_data = get_data_cloud("elect")
-
+    print(elec_data.info())
     # Deleting row 0 and resetting the index
     elec_data = elec_data.drop(elec_data.index[0]).reset_index(drop=True)
 
@@ -278,7 +279,7 @@ def clean_data_electricity():
     # Delete rows with missing values for "Load", "Residual load", and "Renewable share of load"
     elec_data = elec_data.dropna(subset=['Load', 'Residual load', 'Renewable share of load'])
 
-    # Renaming columns as specified
+    # Renaming columns
     column_rename_map = {
         "Date (GMT+1)": "date_gmt+1",
         "Hydro pumped storage consumption": "hydro_storage_in",
@@ -337,11 +338,4 @@ def clean_data_weather():
     return None
 
 
-
-print(clean_data_electricity())
 print(clean_data_electricity().info())
-
-
-
-#print(clean_data_electricity())
-#print(clean_data_electricity().info())
