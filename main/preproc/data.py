@@ -288,5 +288,5 @@ def clean_data_weather():
 
 
 
-print(clean_data_electricity())
-print(clean_data_electricity().info())
+#print(clean_data_electricity())
+#print(clean_data_electricity().info())

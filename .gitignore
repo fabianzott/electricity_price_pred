@@ -1,5 +1,7 @@
 test/
 notebooks/
 .env
-elec_price_pred.egg-in
+elec_price_pred.egg-info/
+electricity_price_pred.egg-info/
+main/feature_engin/feature_engin.ipynb
 .DS_Store
