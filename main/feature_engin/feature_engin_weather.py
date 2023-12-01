@@ -1,7 +1,7 @@
 import sys
 import os
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler, RobustScaler, MinMaxScaler
 
 # Add the 'main' directory to sys.path
 main_dir = os.path.dirname(os.path.dirname(__file__))  # Path to the 'main' directory
@@ -20,23 +20,42 @@ def scale_weather():
         raise RuntimeError(f"Error loading coal data: {e}")
 
     # Convert 'Date' to datetime with UTC timezone
-    #coal_price_df['Date'] = pd.to_datetime(coal_price_df['Date'], utc=True)
+    weather_df['datetime'] = pd.to_datetime(weather_df['datetime'], utc=True)
 
-    # Remove rows where the Date is NaT
-    #coal_price_df = coal_price_df[coal_price_df['Date'].notna()]
+    # Remove rows where the Date is NaN
+    weather_df = weather_df[weather_df['datetime'].notna()]
 
     # Set 'Date' as the index
-    #coal_price_df.set_index('Date', inplace=True)
+    weather_df.set_index('datetime', inplace=True)
 
     # Remove any potential duplicate indices
-    #coal_price_df = coal_price_df[~coal_price_df.index.duplicated(keep='first')]
+    weather_df = weather_df[~weather_df.index.duplicated(keep='first')]
 
-    #scaler = MinMaxScaler()
+    # Creating scalers for different types of features
+    scaler_temp = StandardScaler()
+    scaler_windspeed = RobustScaler()
 
-    # Scale 'coal_adj_close' column
-    #coal_price_df['coal_adj_close'] = scaler.fit_transform(coal_price_df[['coal_adj_close']])
+    # Columns to be scaled
+    temp_columns = ['temp_north', 'temp_south', 'temp_brocken']
+    windspeed_columns = ['windspeed_north', 'windspeed_south', 'windspeed_brocken']
+
+    # Applying StandardScaler to temperature features
+    weather_df[temp_columns] = scaler_temp.fit_transform(weather_df[temp_columns])
+
+    # Applying RobustScaler to windspeed features
+    weather_df[windspeed_columns] = scaler_windspeed.fit_transform(weather_df[windspeed_columns])
+
+    # solar columns for MinMaxScaler
+    solar_columns = ['solarradiation_south', 'solarenergy_south', 'solarradiation_brocken', 'solarenergy_brocken']
+
+    # Creating and applying MinMaxScaler to the specific solar data
+    scaler_solar_specific = MinMaxScaler()
+    weather_df[solar_columns] = scaler_solar_specific.fit_transform(weather_df[solar_columns])
 
     # Resample the DataFrame to 15-minute intervals, forward-filling the data
-    #coal_price_df = coal_price_df.resample('15T').ffill()
+    weather_df = weather_df.resample('15T').ffill()
+
+
+
 
     return weather_df
