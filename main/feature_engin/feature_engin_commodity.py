@@ -1,7 +1,7 @@
 import sys
 import os
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
 
 # Add the 'main' directory to sys.path
 main_dir = os.path.dirname(os.path.dirname(__file__))  # Path to the 'main' directory
@@ -9,10 +9,13 @@ sys.path.append(main_dir)
 
 from preproc.data import clean_data_coal, clean_data_gas, clean_data_oil
 
-def scale_coal_prices():
+def scale_coal_prices(scaling_method='minmax'):
     """
     Loads, processes, and scales coal price data.
-    Returns: Processed DataFrame with scaled coal prices.
+    Parameters:
+        scaling_method (str): The scaling method to use ('minmax', 'standard', or 'robust').
+    Returns:
+        Processed DataFrame with scaled coal prices.
     """
     try:
         coal_price_df = clean_data_coal()
@@ -31,7 +34,15 @@ def scale_coal_prices():
     # Remove any potential duplicate indices
     coal_price_df = coal_price_df[~coal_price_df.index.duplicated(keep='first')]
 
-    scaler = MinMaxScaler()
+    # Select the scaler based on the method
+    if scaling_method == 'minmax':
+        scaler = MinMaxScaler()
+    elif scaling_method == 'standard':
+        scaler = StandardScaler()
+    elif scaling_method == 'robust':
+        scaler = RobustScaler()
+    else:
+        raise ValueError(f"Unsupported scaling method: {scaling_method}")
 
     # Scale 'coal_adj_close' column
     coal_price_df['coal_adj_close'] = scaler.fit_transform(coal_price_df[['coal_adj_close']])
@@ -41,7 +52,7 @@ def scale_coal_prices():
 
     return coal_price_df
 
-def scale_gas_prices():
+def scale_gas_prices(scaling_method='minmax'):
     """
     Loads, processes, and scales gas price data.
     Returns: Processed DataFrame with scaled gas prices.
@@ -55,9 +66,17 @@ def scale_gas_prices():
     gas_price_df['Date'] = pd.to_datetime(gas_price_df['Date'], utc=True)
     gas_price_df.set_index('Date', inplace=True)
 
-    scaler = MinMaxScaler()
+    # Select the scaler based on the method
+    if scaling_method == 'minmax':
+        scaler = MinMaxScaler()
+    elif scaling_method == 'standard':
+        scaler = StandardScaler()
+    elif scaling_method == 'robust':
+        scaler = RobustScaler()
+    else:
+        raise ValueError(f"Unsupported scaling method: {scaling_method}")
 
-    # Scale 'ttf_adj_close' and 'ttf_volume' column
+    # Scale 'coal_adj_close' column
     gas_price_df['ttf_adj_close'] = scaler.fit_transform(gas_price_df[['ttf_adj_close']])
     gas_price_df['ttf_volume'] = scaler.fit_transform(gas_price_df[['ttf_volume']])
 
@@ -67,7 +86,7 @@ def scale_gas_prices():
     return gas_price_df
 
 
-def scale_oil_prices():
+def scale_oil_prices(scaling_method='minmax'):
     """
     Loads, processes, and scales oil price data.
     Returns: Processed DataFrame with scaled oil prices.
@@ -81,7 +100,15 @@ def scale_oil_prices():
     oil_price_df['Date'] = pd.to_datetime(oil_price_df['Date'], utc=True)
     oil_price_df.set_index('Date', inplace=True)
 
-    scaler = MinMaxScaler()
+    # Select the scaler based on the method
+    if scaling_method == 'minmax':
+        scaler = MinMaxScaler()
+    elif scaling_method == 'standard':
+        scaler = StandardScaler()
+    elif scaling_method == 'robust':
+        scaler = RobustScaler()
+    else:
+        raise ValueError(f"Unsupported scaling method: {scaling_method}")
 
     # Scale 'coal_adj_close' column
     oil_price_df['oil_adj_close'] = scaler.fit_transform(oil_price_df[['oil_adj_close']])
@@ -92,13 +119,15 @@ def scale_oil_prices():
 
     return oil_price_df
 
-def combine_dataframes():
+def combine_dataframes(scaling_method='minmax'):
     """
     Combines coal, gas, and oil dataframes on the Date index and drops rows with any NaN values.
+    Parameters:
+        scaling_method (str): The scaling method to use ('minmax', 'standard', or 'robust').
     """
-    scaled_coal_prices = scale_coal_prices()
-    scaled_gas_prices = scale_gas_prices()
-    scaled_oil_prices = scale_oil_prices()
+    scaled_coal_prices = scale_coal_prices(scaling_method)
+    scaled_gas_prices = scale_gas_prices(scaling_method)
+    scaled_oil_prices = scale_oil_prices(scaling_method)
 
     # Merge coal and gas dataframes
     combined_df = pd.merge(scaled_coal_prices, scaled_gas_prices, left_index=True, right_index=True, how='outer')
@@ -110,6 +139,3 @@ def combine_dataframes():
     combined_df = combined_df.dropna()
 
     return combined_df
-
-combine = combine_dataframes()
-print(combine)
