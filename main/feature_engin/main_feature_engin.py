@@ -320,12 +320,15 @@ def merge_all_datasets():
 
     return merged_data
 
-# Call the function to get the merged dataset
-merged_dataset = merge_all_datasets()
-csv_filename = 'alltogether.csv'
-merged_dataset.to_csv(csv_filename, index=True)
+#   ----------------------------------------------------------------
+# UNCOMENT IF  DATSETS ARE CHANGED
 
-print(f"Dataset saved to: {csv_filename}")
+# Call the function to get the merged dataset
+# merged_dataset = merge_all_datasets()
+# csv_filename = 'alltogether.csv'
+# merged_dataset.to_csv(csv_filename, index=True)
+
+# print(f"Dataset saved to: {csv_filename}")
 # # Print or use the merged dataset as needed
 # print(merged_dataset)
 
