@@ -322,9 +322,10 @@ def merge_all_datasets():
 
 # Call the function to get the merged dataset
 merged_dataset = merge_all_datasets()
-merged_dataset.to_csv('alltogether.csv', index=True)
-merged_dataset.head()
+csv_filename = 'alltogether.csv'
+merged_dataset.to_csv(csv_filename, index=True)
 
+print(f"Dataset saved to: {csv_filename}")
 # # Print or use the merged dataset as needed
 # print(merged_dataset)
 
