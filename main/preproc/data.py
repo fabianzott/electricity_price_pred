@@ -48,135 +48,158 @@ def get_data_local():
         return dataframes
 '''
 
-# filenames in the Google cloud data bucket
+# filenames in the Google cloud data bucket with their respective delimiters
 bucket_dict = {
-    'elect': 'germany_electricity_generation_2018-2023.csv',
-    'coal': 'coal_price.csv',
-    'oil': 'oil_price.csv',
-    'gas': 'ttf_price.csv',
-    'weather_north_hourly': 'weather_north_hourly.csv',
-    'weather_south_hourly': 'weather_south_hourly.csv',
-    'pmi_index': 'PMI_germany.csv',
-    'weather_brocken_hourly': 'weather_brocken_hourly.csv',
-    'holidays': 'holidays.csv'
+    'elect': ('germany_electricity_generation_2018-2023.csv', ','),
+    'coal': ('coal_price.csv', ';'),
+    'oil': ('oil_price.csv', ';'),
+    'gas': ('ttf_price.csv', ';'),
+    'weather_north_hourly': ('weather_north_hourly.csv', ','),
+    'weather_south_hourly': ('weather_south_hourly.csv', ','),
+    'pmi_index': ('PMI_germany.csv', ','),
+    'weather_brocken_hourly': ('weather_brocken_hourly.csv', ','),
+    'holidays': ('holidays.csv', ',')
 }
+def download_blob_as_string(bucket_name, blob_name):
+    """Function to download a blob from Google Cloud Storage as a string."""
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
+    return blob.download_as_bytes().decode('utf-8')
 
 
 def get_data_cloud(name):
-
-    # Load environment variables from .env file
     load_dotenv()
-
-    # Set the path to your Google Cloud credentials JSON file
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ.get("CREDENTIALS_PATH")
+    bucket_name = os.environ.get("BUCKET_NAME")
+    if name in bucket_dict:
+        blob_name, delimiter = bucket_dict[name]
+        try:
+            string_data = download_blob_as_string(bucket_name, blob_name)
+            dataframe = pd.read_csv(StringIO(string_data), sep=delimiter, index_col=False, low_memory=False)
+            print(f"Loaded {blob_name} successfully.")
+            return dataframe
+        except Exception as e:
+            print(f"An error occurred while loading {blob_name}: {e}")
+    else:
+        print(f"Name '{name}' not found in bucket dictionary.")
+    return None
 
-    # Initialize a client
-    client = storage.Client()
-    dataframe = None
+# def get_data_cloud(name):
 
-    try:
-        if "germany_electricity_generation_2018-2023.csv" or "weather" in bucket_dict[name]:
+#     # Load environment variables from .env file
+#     load_dotenv()
 
-            # Define your bucket name and object name (file name)
-            bucket_name = os.environ.get("BUCKET_NAME")
-            blob_name = bucket_dict[name]
+#     # Set the path to your Google Cloud credentials JSON file
+#     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ.get("CREDENTIALS_PATH")
 
-            # Create a bucket object and read the file
-            bucket = client.bucket(bucket_name)
-            blob = bucket.blob(blob_name)
+#     # Initialize a client
+#     client = storage.Client()
+#     dataframe = None
 
-            try:
-                # Download the blob as bytes
-                blob_data = blob.download_as_bytes()
+#     try:
+#         if "germany_electricity_generation_2018-2023.csv" or "weather" in bucket_dict[name]:
 
-                # Convert to a file-like object
-                string_data = StringIO(blob_data.decode('utf-8'))
+#             # Define your bucket name and object name (file name)
+#             bucket_name = os.environ.get("BUCKET_NAME")
+#             blob_name = bucket_dict[name]
 
-                # Read the CSV data into a DataFrame
-                dataframe = pd.read_csv(string_data, sep=',', index_col=False, low_memory=False)
-                print(f"Loaded {bucket_dict[name]} successfully.")
+#             # Create a bucket object and read the file
+#             bucket = client.bucket(bucket_name)
+#             blob = bucket.blob(blob_name)
 
-            except Exception as e:
-                print(f"An error occurred: {e}")
-                return None
+#             try:
+#                 # Download the blob as bytes
+#                 blob_data = blob.download_as_bytes()
 
-        elif 'PMI_germany.csv' in bucket_dict[name]:
+#                 # Convert to a file-like object
+#                 string_data = StringIO(blob_data.decode('utf-8'))
 
-            # Define your bucket name and object name (file name)
-            bucket_name = os.environ.get("BUCKET_NAME")
-            blob_name = bucket_dict[name]
+#                 # Read the CSV data into a DataFrame
+#                 dataframe = pd.read_csv(string_data, sep=',', index_col=False, low_memory=False)
+#                 print(f"Loaded {bucket_dict[name]} successfully.")
 
-            # Create a bucket object and read the file
-            bucket = client.bucket(bucket_name)
-            blob = bucket.blob(blob_name)
+#             except Exception as e:
+#                 print(f"An error occurred: {e}")
+#                 return None
 
-            try:
-                # Download the blob as bytes
-                blob_data = blob.download_as_bytes()
+#         elif 'PMI_germany.csv' in bucket_dict[name]:
 
-                # Convert to a file-like object
-                string_data = StringIO(blob_data.decode('utf-8'))
+#             # Define your bucket name and object name (file name)
+#             bucket_name = os.environ.get("BUCKET_NAME")
+#             blob_name = bucket_dict[name]
 
-                # Read the CSV data into a DataFrame
-                dataframe = pd.read_csv(string_data)
-                print(f"Loaded {bucket_dict[name]} successfully.")
+#             # Create a bucket object and read the file
+#             bucket = client.bucket(bucket_name)
+#             blob = bucket.blob(blob_name)
 
-            except Exception as e:
-                print(f"An error occurred: {e}")
+#             try:
+#                 # Download the blob as bytes
+#                 blob_data = blob.download_as_bytes()
 
-        elif 'holidays.csv' in bucket_dict[name]:
+#                 # Convert to a file-like object
+#                 string_data = StringIO(blob_data.decode('utf-8'))
 
-            # Define your bucket name and object name (file name)
-            bucket_name = os.environ.get("BUCKET_NAME")
-            blob_name = bucket_dict[name]
+#                 # Read the CSV data into a DataFrame
+#                 dataframe = pd.read_csv(string_data)
+#                 print(f"Loaded {bucket_dict[name]} successfully.")
 
-            # Create a bucket object and read the file
-            bucket = client.bucket(bucket_name)
-            blob = bucket.blob(blob_name)
+#             except Exception as e:
+#                 print(f"An error occurred: {e}")
 
-            try:
-                # Download the blob as bytes
-                blob_data = blob.download_as_bytes()
+#         elif 'holidays.csv' in bucket_dict[name]:
 
-                # Convert to a file-like object
-                string_data = StringIO(blob_data.decode('utf-8'))
+#             # Define your bucket name and object name (file name)
+#             bucket_name = os.environ.get("BUCKET_NAME")
+#             blob_name = bucket_dict[name]
 
-                # Read the CSV data into a DataFrame
-                dataframe = pd.read_csv(string_data)
-                print(f"Loaded {bucket_dict[name]} successfully.")
+#             # Create a bucket object and read the file
+#             bucket = client.bucket(bucket_name)
+#             blob = bucket.blob(blob_name)
 
-            except Exception as e:
-                print(f"An error occurred: {e}")
+#             try:
+#                 # Download the blob as bytes
+#                 blob_data = blob.download_as_bytes()
 
-        else:
-            # Define your bucket name and object name (file name)
-            bucket_name = os.environ.get("BUCKET_NAME")
-            blob_name = bucket_dict[name]
+#                 # Convert to a file-like object
+#                 string_data = StringIO(blob_data.decode('utf-8'))
 
-            # Create a bucket object and read the file
-            bucket = client.bucket(bucket_name)
-            blob = bucket.blob(blob_name)
+#                 # Read the CSV data into a DataFrame
+#                 dataframe = pd.read_csv(string_data)
+#                 print(f"Loaded {bucket_dict[name]} successfully.")
 
-            try:
-                # Download the blob as bytes
-                blob_data = blob.download_as_bytes()
+#             except Exception as e:
+#                 print(f"An error occurred: {e}")
 
-                # Convert to a file-like object
-                string_data = StringIO(blob_data.decode('utf-8'))
+#         else:
+#             # Define your bucket name and object name (file name)
+#             bucket_name = os.environ.get("BUCKET_NAME")
+#             blob_name = bucket_dict[name]
 
-                # Read the CSV data into a DataFrame
-                dataframe = pd.read_csv(string_data, sep=';', index_col=False)
-                print(f"Loaded {bucket_dict[name]} successfully.")
+#             # Create a bucket object and read the file
+#             bucket = client.bucket(bucket_name)
+#             blob = bucket.blob(blob_name)
 
-            except Exception as e:
-                print(f"An error occurred: {e}")
-                return None
+#             try:
+#                 # Download the blob as bytes
+#                 blob_data = blob.download_as_bytes()
 
-    except FileNotFoundError:
-        print(f"File not found: {path}")
-        return None
+#                 # Convert to a file-like object
+#                 string_data = StringIO(blob_data.decode('utf-8'))
 
-    return dataframe
+#                 # Read the CSV data into a DataFrame
+#                 dataframe = pd.read_csv(string_data, sep=';', index_col=False)
+#                 print(f"Loaded {bucket_dict[name]} successfully.")
+
+#             except Exception as e:
+#                 print(f"An error occurred: {e}")
+#                 return None
+
+#     except FileNotFoundError:
+#         print(f"File not found: {path}")
+#         return None
+
+#     return dataframe
 
 
 def clean_data_coal():
@@ -405,3 +428,4 @@ def clean_data_weather():
 
     weather_data_cleaned = merged_df
     return weather_data_cleaned
+print(clean_data_weather())
