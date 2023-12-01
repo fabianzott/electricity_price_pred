@@ -51,4 +51,35 @@ def scale_electricity_data(scaling_method='standard'):
     electricity_scaled = scaler.fit_transform(electricity_df)
     electricity_scaled_df = pd.DataFrame(electricity_scaled, columns=electricity_df.columns, index=electricity_df.index)
 
+     # Extracting features from the datetime index
+    electricity_scaled_df = electricity_scaled_df.copy()
+
+    # Creating a combined feature for hour and minutes as fractional hours
+    #electricity_scaled_df['hour'] = electricity_scaled_df.index.hour
+    electricity_scaled_df['fractional_hour'] = electricity_scaled_df.index.hour + electricity_scaled_df.index.minute / 60
+
+    # the other datetime features
+    electricity_scaled_df['day_of_week'] = electricity_scaled_df.index.dayofweek
+    electricity_scaled_df['week_of_year'] = electricity_scaled_df.index.isocalendar().week
+    electricity_scaled_df['month'] = electricity_scaled_df.index.month
+    electricity_scaled_df['year'] = electricity_scaled_df.index.year
+
+
+    # Reordering the columns to bring the new columns to the beginning
+    column_order = ['fractional_hour', 'day_of_week', 'week_of_year', 'month', 'year'] + [col for col in electricity_scaled_df.columns if col not in ['fractional_hour', 'day_of_week', 'week_of_year', 'month', 'year']]
+    electricity_scaled_df = electricity_scaled_df[column_order]
+
+    # Selecting the features to be scaled
+    features_to_scale = ['fractional_hour', 'day_of_week', 'week_of_year', 'month', 'year']
+    scaled_features = scaler.fit_transform(electricity_scaled_df[features_to_scale])
+
+    # Creating a new DataFrame for the scaled features
+    df_scaled = pd.DataFrame(scaled_features, columns=features_to_scale, index=electricity_scaled_df.index)
+
+    # Merging the scaled features with the original data
+    electricity_scaled_df = pd.concat([df_scaled, electricity_scaled_df.drop(columns=features_to_scale)], axis=1)
+
+
+
+
     return electricity_scaled_df
