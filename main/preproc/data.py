@@ -286,7 +286,7 @@ def clean_data_electricity():
     # clean electricity data
     # Access the electricity data
     elec_data = get_data_cloud("elect")
-    print(elec_data.info())
+
     # Deleting row 0 and resetting the index
     elec_data = elec_data.drop(elec_data.index[0]).reset_index(drop=True)
 
@@ -381,7 +381,7 @@ def clean_data_holidays():
     holidays_data_cleaned = holidays_data
 
     return holidays_data_cleaned
-print(clean_data_holidays())
+
 
 def clean_data_weather():
     # Clean weather data for all csv files (north, south germany, brocken)
@@ -428,4 +428,3 @@ def clean_data_weather():
 
     weather_data_cleaned = merged_df
     return weather_data_cleaned
-print(clean_data_weather())

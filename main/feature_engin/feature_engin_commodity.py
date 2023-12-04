@@ -51,8 +51,7 @@ def scale_coal_prices(scaling_method='minmax'):
     coal_price_df = coal_price_df.resample('15T').ffill()
 
     return coal_price_df
-coal_price_df = clean_data_coal()
-print(coal_price_df)
+
 
 def scale_gas_prices(scaling_method='minmax'):
     """

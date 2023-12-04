@@ -49,6 +49,3 @@ def scale_holidays():
     holidays_df = holidays_df.resample('15T').ffill()
 
     return holidays_df
-
-holidays_df = scale_holidays()
-print(holidays_df)

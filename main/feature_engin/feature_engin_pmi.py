@@ -43,6 +43,3 @@ def scale_pmi_index():
     pmi_df = pmi_df.resample('15T').ffill()
 
     return pmi_df
-
-pmi_df = scale_pmi_index()
-print(pmi_df)

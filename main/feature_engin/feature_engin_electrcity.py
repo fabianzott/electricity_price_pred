@@ -79,7 +79,4 @@ def scale_electricity_data(scaling_method='standard'):
     # Merging the scaled features with the original data
     electricity_scaled_df = pd.concat([df_scaled, electricity_scaled_df.drop(columns=features_to_scale)], axis=1)
 
-
-
-
     return electricity_scaled_df
