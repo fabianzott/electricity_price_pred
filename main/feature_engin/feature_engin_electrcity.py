@@ -47,11 +47,17 @@ def scale_electricity_data(scaling_method='standard'):
         print(f"Unsupported scaling method: {scaling_method}")
         sys.exit(1)
 
-    # Apply scaling
+    # Extract the target variable
+    target_variable = electricity_df['day_ahead_price']
+
+    # Drop the target variable from the DataFrame before scaling
+    electricity_df = electricity_df.drop(columns=['day_ahead_price'])
+
+    # Apply scaling to the remaining features
     electricity_scaled = scaler.fit_transform(electricity_df)
     electricity_scaled_df = pd.DataFrame(electricity_scaled, columns=electricity_df.columns, index=electricity_df.index)
 
-     # Extracting features from the datetime index
+    # Extracting features from the datetime index
     electricity_scaled_df = electricity_scaled_df.copy()
 
     # Creating a combined feature for hour and minutes as fractional hours
@@ -64,10 +70,12 @@ def scale_electricity_data(scaling_method='standard'):
     electricity_scaled_df['month'] = electricity_scaled_df.index.month
     electricity_scaled_df['year'] = electricity_scaled_df.index.year
 
-
     # Reordering the columns to bring the new columns to the beginning
     column_order = ['fractional_hour', 'day_of_week', 'week_of_year', 'month', 'year'] + [col for col in electricity_scaled_df.columns if col not in ['fractional_hour', 'day_of_week', 'week_of_year', 'month', 'year']]
     electricity_scaled_df = electricity_scaled_df[column_order]
+
+    # Reattach the target variable to the scaled DataFrame
+    electricity_scaled_df['day_ahead_price'] = target_variable
 
     # Selecting the features to be scaled
     features_to_scale = ['fractional_hour', 'day_of_week', 'week_of_year', 'month', 'year']
