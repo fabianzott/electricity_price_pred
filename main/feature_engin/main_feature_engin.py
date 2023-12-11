@@ -51,13 +51,13 @@ def merge_all_datasets():
 # UNCOMENT IF  DATSETS ARE CHANGED
 
 # Call the function to get the merged dataset
-merged_dataset = merge_all_datasets()
+#merged_dataset = merge_all_datasets()
 #print(merged_dataset.info())
 #print(merged_dataset.head())
-csv_filename = 'fianal_ML_data.csv'
-merged_dataset.to_csv(csv_filename, index=True)
+#csv_filename = 'fianal_ML_data.csv'
+#merged_dataset.to_csv(csv_filename, index=True)
 
-print(f"Dataset saved to: {csv_filename}")
+#print(f"Dataset saved to: {csv_filename}")
 # # Print or use the merged dataset as needed
 # print(merged_dataset)
 
