@@ -8,20 +8,6 @@ Key data sources for this project encompass the Fraunhofer Institute for Solar E
 
 The project's fundamental approach involves retrieving data stored on Google BigQuery. This data then undergoes a series of processing steps, including preprocessing, scaling, and the application of various machine learning models for training. The ultimate goal is to forecast future electricity prices in Germany with a model that can integrate real-time data updates to improve prediction accuracy.
 
-## Table of Contents
-
-1. [Installation](#installation)
-2. [Usage](#usage)
-3. [Features](#features)
-4. [Dependencies](#dependencies)
-5. [Configuration](#configuration)
-6. [Documentation](#documentation)
-7. [Examples](#examples)
-8. [Troubleshooting](#troubleshooting)
-9. [Contributors](#contributors)
-10. [License](#license)
-
-
 ## Features
 
 - Integration with Google BigQuery for data handling.
