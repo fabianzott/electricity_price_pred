@@ -2,7 +2,7 @@
 
 ## Introduction
 
-`electricty_price_pred` is a cutting-edge machine learning project aimed at predicting the electricity prices in Germany for the next day. Developed by a dedicated team of three - Fabian Zott, Nepomuk Mylius, and Oleksandr - this project leverages diverse data sources, including net electricity generation in Germany, commodity prices, weather data, economic indicators, and information on events and holidays.
+`electricty_price_pred` is a machine learning project aimed at predicting the electricity spot prices in Germany for the next day (Day-Ahead Price). Developed by a dedicated team of three - Fabian Zott, Nepomuk Mylius, and Oleksandr - this project leverages diverse data sources, including net electricity generation in Germany, commodity prices, weather data, economic indicators, and information on events, such as public holidays.
 
 The core idea revolves around fetching data stored on Google BigQuery, followed by preprocessing, scaling, and feeding it into a sophisticated Machine Learning model. This model is designed to predict the future electricity prices in Germany, incorporating real-time data updates for enhanced accuracy.
 
