@@ -19,13 +19,6 @@ The core idea revolves around fetching data stored on Google BigQuery, followed 
 9. [Contributors](#contributors)
 10. [License](#license)
 
-## Installation
-
-> **Note:** The code for the project is currently under development.
-
-## Usage
-
-Usage instructions will be provided upon completion of the project's codebase.
 
 ## Features
 
@@ -46,22 +39,6 @@ The project relies on several Python libraries, as listed in the `requirements.t
 - `scipy` (version 1.10.0)
 - `scikit-learn` (version 1.3.1)
 - `google-cloud-bigquery`
-
-## Configuration
-
-Configuration details will be added upon further development of the project.
-
-## Documentation
-
-Documentation will be available once the project progresses further.
-
-## Examples
-
-Example use cases and code snippets will be provided in future updates.
-
-## Troubleshooting
-
-Troubleshooting guidelines will be established as the project develops.
 
 ## Contributors
 
